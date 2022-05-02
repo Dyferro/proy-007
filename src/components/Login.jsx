@@ -1,6 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { auth, db } from '../firebase'
+import { withRouter } from 'react-router-dom';
 
-const Login = () => {
+const Login = (props) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
@@ -31,14 +33,72 @@ const Login = () => {
         setPassword('')
         setError(null)
 
+        if (esRegistro) {
+            registrar()
+        } else {
+            login()
+        }
+
     }
+
+    const registrar = React.useCallback(async () => {
+        try {
+            const res = await auth.createUserWithEmailAndPassword(email, password)
+            console.log(res.user);
+            await db.collection('usuarios').doc(res.user.email).set({
+                email: res.user.email,
+                uid: res.user.uid
+            })
+            await db.collection(res.user.uid).add({
+                name: 'Tarea de ejemplo #1',
+                cantidad: 0
+            })
+            setEmail('')
+            setPassword('')
+            setError(null)
+            props.history.push('/admin')
+        } catch (error) {
+            console.log(error);
+            // setError(error.message)
+            if (error.code === 'auth/email-already-in-use') {
+                setError('** Usuario ya registrado... **')
+                return
+            }
+            if (error.code === 'auth/invalid-email') {
+                setError('** Email no válido **')
+                return
+            }
+        }
+    }, [email, password, props.history]);
+
+    const login = React.useCallback(async () => {
+        try {
+            const res = await auth.signInWithEmailAndPassword(email, password)
+            props.history.push('/admin')
+            console.log(res.user);
+            setEmail('')
+            setPassword('')
+            setError(null)
+
+        } catch (error) {
+            console.log(error);
+            if (error.code === 'auth/user-not-found') {
+                setError('** Usuario o contraseña incorrecta **')
+                return
+            }
+            if (error.code === 'auth/wrong-password') {
+                setError('** Usuario o contraseña incorrecta **')
+                return
+            }
+        }
+    }, [email, password, props.history]);
 
     return (
         <div className="mt-3 p-2">
             <div className="container text-center">
                 <h3>
                     {
-                        esRegistro ? 'Registro de Usuarios' : 'Login'
+                        esRegistro ? 'Registro' : 'Login'
                     }
                 </h3>
                 <hr />
@@ -97,4 +157,4 @@ const Login = () => {
     )
 }
 
-export default Login
+export default withRouter(Login)
