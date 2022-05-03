@@ -1,5 +1,4 @@
 import {
-  BrowserRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
@@ -30,22 +29,21 @@ function App() {
   }, [])
 
   return firebaseUser !== false ? (
-    <Router>
-      <div className="container">
-        <div className="p-2 container">
-          <Navbar firebaseUser={firebaseUser} />
-        </div>
-        <div className="container border border-dark p-5">
-          <Switch>
-            <Route exact path='/login' component={Login} />
-            <Route exact path='/admin' component={Admin} />
-            <Route exact path='/home' component={Home} />
-            <Route exact path='/' component={Home} />
-            <Route path='*' component={NotFound} />
-          </Switch>
-        </div>
+    <div className="container">
+      <div className="p-2 container">
+        <Navbar firebaseUser={firebaseUser} />
       </div>
-    </Router>
+      <div className="container border border-dark p-5">
+        <Switch>
+
+          <Route path='/login' component={Login} />
+          <Route path='/admin' component={Admin} />
+          <Route path='/home' component={Home} />
+          <Route path='/' component={Home} />
+          <Route path='*' component={NotFound} />
+        </Switch>
+      </div>
+    </div>
   ) : (
     <div>Cargando...</div>
   )
